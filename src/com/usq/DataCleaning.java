@@ -79,10 +79,11 @@ public class DataCleaning {
 		        }
 		    }
 		 
-		System.out.println(result);
-	      
-		
-		return result.toString();
+	
+		//Remove HTML TAGS
+		String removeHTML = result.toString().replaceAll("\\<.*?\\>", "");
+		System.out.println(removeHTML);
+		return removeHTML;
 	}
 	
 	public static void main(String[] args) throws IOException, SQLException {

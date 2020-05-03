@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -24,10 +26,10 @@ public class DataCleaning {
 	static int from_index;
 	
 	
-	public static void extractKey(String messageMetaData) {
+	public static Message extractKey(Message msg,String messageMetaData) {
 		from_index=0;
 		HashMap<String, String> hmap = new HashMap<String, String>();
-		System.out.println("---------------key value pairs---------------");
+//		System.out.println("---------------key value pairs---------------");
 		 try (Scanner scanner = new Scanner(messageMetaData)) {
 			 String mess = "",u_to="",u_from="",subject="",m_date="";
 		        
@@ -41,7 +43,9 @@ public class DataCleaning {
 		              mess=arrOfStr[1];
 		              break;
 		            case ("Date"):
-		            	m_date=arrOfStr[1];
+		            	String[] s= arrOfStr[1].split(" ");
+		                String val = s[2]+" "+s[3]+" "+s[4];
+		            	m_date=val;
 		              break;
 		            case ("From"):
 		            	u_from=arrOfStr[1];
@@ -69,12 +73,21 @@ public class DataCleaning {
 		            
 		        }
 			 
-			 System.out.println(mess);
-			 System.out.println(m_date);
-			 System.out.println(u_from);
-			 System.out.println(u_to);
-			 System.out.println(subject);
+			 msg.messageid=mess;
+			 msg.to_user=u_to;
+			 msg.from_user=u_from;
+			 msg.subject=subject;
+			 msg.date= msg.setDate(m_date);;
+			 
+//			 System.out.println(mess);
+//			 System.out.println(m_date);
+//			 System.out.println(u_from);
+//			 System.out.println(u_to);
+//			 System.out.println(subject);
 		    }
+		 
+		 
+		 return msg;
 		 
 		
 	      
@@ -84,7 +97,7 @@ public class DataCleaning {
 	
 	
 	
-	public static void extractBody(String messageMetaData) {
+	public static Message extractBody(Message msg,String messageMetaData) {
 		
 		HashMap<String, String> hmap = new HashMap<String, String>();
 		StringBuilder result = new StringBuilder();
@@ -111,7 +124,11 @@ public class DataCleaning {
 			res = str.substring(len1+from_index);
 		}
 		
-		System.out.println(res);
+//		System.out.println(res);
+		
+		msg.body=res;
+		
+		return msg;
 	
 		//Remove HTML TAGS
 //		String removeHTML = result.toString().replaceAll("\\<.*?\\>", "");
@@ -124,8 +141,14 @@ public class DataCleaning {
 		
 		String messageData;
 		
+		Message msg = new Message();
+		
+		
+		List<Message> msgList = new ArrayList<Message>();
+		
+		
 		connection = ConnectionManager.getConnection();
-		System.out.println(connection);
+//		System.out.println(connection);
 		connection.setAutoCommit(false);
 
 		String sqlQuery = "SELECT * FROM raw_data LIMIT 10";
@@ -136,11 +159,29 @@ public class DataCleaning {
 		ResultSet rs = pstmt.executeQuery();
 		
 		while (rs.next()) {
-			System.out.println(rs.getString(2));
+//			System.out.println(rs.getString(2));
 			messageData =rs.getString(3);
-			extractKey(messageData);
-			extractBody(messageData);
+			msg=extractKey(msg,messageData);
+			msg=extractBody(msg,messageData);
+			
+//			System.out.println(msg.toString());
+			
+			msgList.add(msg);
+			
         }
+		
+		
+//		todo**********************************************************
+		
+//		todo
+		// write a code tobatch insert here
+		// msgList contains list of message objects
+		//batch insert from here
+		
+		for(Message m : msgList) {
+			if(m.body!="")
+			System.out.println(m.toString());
+		}
 		
 		
 		System.out.println("***********finish************");

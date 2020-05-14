@@ -16,7 +16,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.sql.ResultSet;
 import com.mysql.jdbc.PreparedStatement;
-
+import Data_Processor.*;
 
 
 public class DataCleaning {
@@ -28,8 +28,8 @@ public class DataCleaning {
 	
 	public static Message extractKey(Message msg,String messageMetaData) {
 		from_index=0;
-		HashMap<String, String> hmap = new HashMap<String, String>();
-//		System.out.println("---------------key value pairs---------------");
+		
+
 		 try (Scanner scanner = new Scanner(messageMetaData)) {
 			 String mess = "",u_to="",u_from="",subject="",m_date="";
 		        
@@ -57,7 +57,7 @@ public class DataCleaning {
 		            	subject=arrOfStr[1];
 		              break;
 		            case ("X-FileName"):
-//		            	this is to find the start index to grab themessage body
+//		            	this is to find the start index to grab the message body
 		            	from_index=arrOfStr[0].length()+arrOfStr[1].length()+2;
 //		            	subject=arrOfStr[1];
 		              break;
@@ -79,8 +79,8 @@ public class DataCleaning {
 			 msg.subject=subject;
 			 msg.date= msg.setDate(m_date);;
 			 
-//			 System.out.println(mess);
-//			 System.out.println(m_date);
+	//		 System.out.println(mess);
+//    		 System.out.println(m_date);
 //			 System.out.println(u_from);
 //			 System.out.println(u_to);
 //			 System.out.println(subject);
@@ -104,38 +104,76 @@ public class DataCleaning {
 		Boolean flag= false;
 		
 		
-		String reply_con=" -----Original Message-----|---------------------- Forwarded ";
+		
 		
 		String str = messageMetaData;
 		
 		int len1 =str.indexOf("X-FileName:");
 		
-		int len2 =str.indexOf("["+reply_con+"]");
+		int len2 =str.indexOf("----------------------");
 		
 		String res="";
 		
-		//fromindex is the length of x filename to get from index of message body
+		//from_index is the length of x filename to get from index of message body
 		
-		
+		//System.out.println(len2);
 		
 		if(len2>0) {
+			
 			res = str.substring(len1+from_index, len2);
+			if(!res.matches("[a-zA-Z]+")){
+				res="";
+			}
+			
+			
 		}else {
 			res = str.substring(len1+from_index);
 		}
 		
-//		System.out.println(res);
+		//System.out.println(res);
 		
-		msg.body=res;
 		
+		
+		
+		//Remove HTML TAGS
+		String removeHTML = res.replaceAll("\\<.*?\\>", "");
+		//System.out.println(removeHTML);
+		
+		//Remove http and https links
+		String removeHyperLinks = removeHTML.replaceAll("(http|https):\\/\\/(.*)", "");
+		//System.out.println(removeHyperLinks);
+		
+		//Remove all special characters except alphabets and line break.Replace with break [^A-Za-z'\\n]
+		String removeSpecailChars = removeHyperLinks.replaceAll("[^A-Za-z]", " "); 
+		//System.out.println(removeSpecailChars);
+		
+		//Remove more than one space
+		String removeSpace = removeSpecailChars.replaceAll("\\s\\s+", " ");
+		//System.out.println(removeSpace);
+		
+		//Remove stop words
+		StopWordChecker stopWord = new StopWordChecker();
+		String finalStopWord = stopWord.removeStopword(removeSpace);
+		//System.out.println(finalStopWord);
+		
+		
+		//Apply Stemming
+		
+		StemChecker stemming = new StemChecker();
+		String StemStr = stemming.checkStem(finalStopWord);
+		System.out.println(StemStr);
+		
+		
+		
+		msg.body=removeSpecailChars;
 		return msg;
 	
-		//Remove HTML TAGS
-//		String removeHTML = result.toString().replaceAll("\\<.*?\\>", "");
-//		System.out.println(removeHTML);
-		
+
 		
 	}
+	
+
+	
 	
 	public static void main(String[] args) throws IOException, SQLException {
 		
@@ -151,7 +189,7 @@ public class DataCleaning {
 //		System.out.println(connection);
 		connection.setAutoCommit(false);
 
-		String sqlQuery = "SELECT * FROM raw_data LIMIT 10";
+		String sqlQuery = "SELECT * FROM raw_data LIMIT 500";
 		PreparedStatement pstmt = (PreparedStatement) connection.prepareStatement(sqlQuery);
 		
 		
@@ -164,9 +202,11 @@ public class DataCleaning {
 			msg=extractKey(msg,messageData);
 			msg=extractBody(msg,messageData);
 			
-//			System.out.println(msg.toString());
 			
-			msgList.add(msg);
+			if(!msg.body.isEmpty()) {
+				msgList.add(msg);
+				//System.out.println(msg.body);
+			}
 			
         }
 		
@@ -179,8 +219,9 @@ public class DataCleaning {
 		//batch insert from here
 		
 		for(Message m : msgList) {
-			if(m.body!="")
-			System.out.println(m.toString());
+			//if(m.body!="")
+			//System.out.println(m.toString());
+			//System.out.println(m.toString());
 		}
 		
 		

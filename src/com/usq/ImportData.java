@@ -89,13 +89,14 @@ public class ImportData {
 		ImportData fw = new ImportData();
 
 		connection = ConnectionManager.getConnection();
-
+		System.out.println(connection);
 		connection.setAutoCommit(false);
 
 		String sqlQuery = "insert into raw_data (file,data) values (?,?)";
 		PreparedStatement pstmt = (PreparedStatement) connection.prepareStatement(sqlQuery);
+		
 		long startTime = System.nanoTime();
-		fw.walk("D:\\sem4\\nlp\\enron_mail_20150507\\maildir\\", pstmt);
+		fw.walk("D:\\Aus\\USQ\\sem4\\ICT\\enron_mail_20150507\\maildir", pstmt);
 //    	fw.walk("D:\\sem4\\nlp\\enron_mail_20150507\\test\\",pstmt );
 
 		if (count % batchSize != 0) {

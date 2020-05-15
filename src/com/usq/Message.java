@@ -12,6 +12,9 @@ public class Message {
 	String from_user;
 	
 	String subject;
+	
+	String raw_msg;
+	
 	String body;
 	
 	Date date;
@@ -46,12 +49,13 @@ public class Message {
 	
 	
 	
-	public Message(String id,String to,String from, String subject,String body,String s_date) {
+	public Message(String id,String to,String from, String subject,String body,String raw,String s_date) {
 		this.messageid=id;
 		this.to_user=to;
 		this.from_user=from;
 		this.subject=subject;
 		this.body=body;
+		this.raw_msg=raw;
 		
 		String string = s_date; //Thu, 24 Jan 2002
 		DateFormat format = new SimpleDateFormat("d MMMM yyyy", Locale.ENGLISH);

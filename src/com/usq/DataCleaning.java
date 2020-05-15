@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +41,8 @@ public class DataCleaning {
 		            
 		            switch (arrOfStr[0]) {
 		            case ("Message-ID"):
-		              mess=arrOfStr[1];
+		              mess=arrOfStr[1].replaceAll(">", "");
+		              mess=mess.replaceAll("<", "");
 		              break;
 		            case ("Date"):
 		            	String[] s= arrOfStr[1].split(" ");
@@ -133,6 +135,8 @@ public class DataCleaning {
 		//System.out.println(res);
 		
 		
+		msg.raw_msg=res;
+		
 		
 		
 		//Remove HTML TAGS
@@ -161,11 +165,14 @@ public class DataCleaning {
 		
 		StemChecker stemming = new StemChecker();
 		String StemStr = stemming.checkStem(finalStopWord);
-		System.out.println(StemStr);
+		
+		
+//		System.out.println(res);
+//		System.out.println("==>"+StemStr);
 		
 		
 		
-		msg.body=removeSpecailChars;
+		msg.body=StemStr.trim();
 		return msg;
 	
 
@@ -189,26 +196,79 @@ public class DataCleaning {
 //		System.out.println(connection);
 		connection.setAutoCommit(false);
 
-		String sqlQuery = "SELECT * FROM raw_data LIMIT 500";
+		String sqlQuery = "SELECT * FROM raw_data";
 		PreparedStatement pstmt = (PreparedStatement) connection.prepareStatement(sqlQuery);
 		
 		
 		
 		ResultSet rs = pstmt.executeQuery();
 		
+		
+		String sqlQuery1 = "insert into message_data (id,msg_id,message) values (?,?,?)";
+		PreparedStatement pstmt1 = (PreparedStatement) connection.prepareStatement(sqlQuery1);
+		
+		
+		String sqlQuery2 = "insert into message_timeline (id,msg_date) values (?,?)";
+		PreparedStatement pstmt2 = (PreparedStatement) connection.prepareStatement(sqlQuery2);
+		
+		String sqlQuery3 = "insert into message_raw (id,raw_msg) values (?,?)";
+		PreparedStatement pstmt3 = (PreparedStatement) connection.prepareStatement(sqlQuery3);
+		
+		int counter=0,totalmessage=0;;
+		
+		
 		while (rs.next()) {
 //			System.out.println(rs.getString(2));
 			messageData =rs.getString(3);
 			msg=extractKey(msg,messageData);
 			msg=extractBody(msg,messageData);
+			totalmessage++;
+			
+			if(!msg.body.isEmpty()) {	
+				counter++;
+//				System.out.println("records inserted "+counter);
+				// add raw msg
+				pstmt1.setInt(1,counter);
+				pstmt1.setString(2, msg.messageid);
+				pstmt1.setString(3, msg.body);
+				pstmt1.addBatch();
+				
+//				System.out.println("records inserted "+counter);
+				//add date
+				pstmt2.setInt(1, counter);
+				pstmt2.setDate(2, new java.sql.Date(msg.date.getTime()));
+				pstmt2.addBatch();
+				
+//				System.out.println("records inserted "+counter);
+				//add processed message
+				pstmt3.setInt(1, counter);
+				pstmt3.setString(2, msg.body);
+				pstmt3.addBatch();
+				
+//				System.out.println(msg.from_user);
+//				System.out.println(msg.to_user);
+				
+//				System.out.println("=====================\n\n\n");
+
+				
+				
+				if(counter%1000==0) {	
+					
+					
+						
+						pstmt1.executeBatch();
+						pstmt2.executeBatch();
+						pstmt3.executeBatch();
+						
+						connection.commit();
+//						msgList.clear();
+						System.out.println("records inserted = "+counter);
+					}
+
+				}
 			
 			
-			if(!msg.body.isEmpty()) {
-				msgList.add(msg);
-				//System.out.println(msg.body);
 			}
-			
-        }
 		
 		
 //		todo**********************************************************
@@ -224,9 +284,22 @@ public class DataCleaning {
 			//System.out.println(m.toString());
 		}
 		
+		pstmt1.executeBatch();
+		pstmt2.executeBatch();
+		pstmt3.executeBatch();
+		
+		connection.commit();
+		
+		System.out.println("total empty message = "+ (totalmessage-counter));
+		
+		
+		connection.close();
 		
 		System.out.println("***********finish************");
 
 	}
+	
+
+	
 
 }

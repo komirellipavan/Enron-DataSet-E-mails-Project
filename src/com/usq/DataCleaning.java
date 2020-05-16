@@ -236,7 +236,13 @@ public class DataCleaning {
 //				System.out.println("records inserted "+counter);
 				//add date
 				pstmt2.setInt(1, counter);
-				pstmt2.setDate(2, new java.sql.Date(msg.date.getTime()));
+				try {
+					Date msgdate=new java.sql.Date(msg.date.getTime());
+					pstmt2.setDate(2, msgdate);
+				}catch(Exception e) {
+					pstmt2.setDate(2, null);
+				}
+
 				pstmt2.addBatch();
 				
 //				System.out.println("records inserted "+counter);

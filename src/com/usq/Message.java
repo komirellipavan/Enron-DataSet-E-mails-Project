@@ -29,12 +29,17 @@ public class Message {
 		String string = s_date; //Thu, 24 Jan 2002
 		DateFormat format = new SimpleDateFormat("d MMMM yyyy", Locale.ENGLISH);
 		Date date = null;
+		
+		
 		try {
 			date = format.parse(string);
-		} catch (ParseException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
+			date = null;
+//			e.printStackTrace();
+			
 		}
+		
 		
 		this.date = date;
 		

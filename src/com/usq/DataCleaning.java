@@ -237,8 +237,14 @@ public class DataCleaning {
 				//add date
 				pstmt2.setInt(1, counter);
 				try {
-					Date msgdate=new java.sql.Date(msg.date.getTime());
-					pstmt2.setDate(2, msgdate);
+					if(msg.date!=null) {
+						Date msgdate=new java.sql.Date(msg.date.getTime());
+						pstmt2.setDate(2, msgdate);
+					}else {
+						pstmt2.setDate(2, null);
+					}
+					
+					
 				}catch(Exception e) {
 					pstmt2.setDate(2, null);
 				}
@@ -258,7 +264,7 @@ public class DataCleaning {
 
 				
 				
-				if(counter%1000==0) {	
+				if(counter%500==0) {	
 					
 					
 						

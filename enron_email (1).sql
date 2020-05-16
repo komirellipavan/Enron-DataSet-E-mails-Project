@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 15, 2020 at 02:22 PM
+-- Generation Time: May 16, 2020 at 06:15 AM
 -- Server version: 10.4.11-MariaDB
 -- PHP Version: 7.4.2
 
@@ -42,7 +42,7 @@ CREATE TABLE `message_data` (
 
 CREATE TABLE `message_raw` (
   `id` int(11) NOT NULL,
-  `raw_msg` longtext NOT NULL
+  `raw_msg` longtext DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------
@@ -53,7 +53,7 @@ CREATE TABLE `message_raw` (
 
 CREATE TABLE `message_timeline` (
   `id` int(9) NOT NULL,
-  `msg_date` date NOT NULL
+  `msg_date` date DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- --------------------------------------------------------

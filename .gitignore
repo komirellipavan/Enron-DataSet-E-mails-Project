@@ -4,6 +4,7 @@ bin
 .classpath
 .project
 
+
 src
 
 src/Repository/
@@ -12,4 +13,6 @@ src/Data_Processor/
 src/Repository/**
 
 src/Data_Processor/**
+
+src/com/usq/ConnectionManager.java
 

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 16, 2020 at 06:15 AM
+-- Generation Time: Jun 07, 2020 at 05:36 PM
 -- Server version: 10.4.11-MariaDB
 -- PHP Version: 7.4.2
 
@@ -66,6 +66,19 @@ CREATE TABLE `raw_data` (
   `id` int(255) NOT NULL,
   `file` text NOT NULL,
   `data` longtext NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE `users` (
+  `from_user` text NOT NULL,
+  `to_user` text NOT NULL,
+  `message_id` int(9) NOT NULL,
+  `msg_key` text NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
